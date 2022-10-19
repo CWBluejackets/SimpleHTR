@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 from typing import Tuple, List
 
 import cv2
@@ -13,9 +14,14 @@ from preprocessor import Preprocessor
 
 class FilePaths:
     """Filenames and paths to data."""
-    fn_char_list = '../model/charList.txt'
-    fn_summary = '../model/summary.json'
+    model_dir = '../model'
+    fn_char_list = os.path.join(model_dir, 'charList.txt')
+    fn_summary = os.path.join(model_dir, 'summary.json')
     fn_corpus = '../data/corpus.txt'
+
+    @classmethod
+    def set_model_dir(cls, model_dir0):
+        cls.model_dir = model_dir0
 
 
 def get_img_height() -> int:
@@ -151,6 +157,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--img_file', help='Image used for inference.', type=Path, default='../data/word.png')
     parser.add_argument('--early_stopping', help='Early stopping epochs.', type=int, default=25)
     parser.add_argument('--dump', help='Dump output of NN to CSV file(s).', action='store_true')
+    parser.add_argument('--model_dir', help='Path to trained model', type=Path, default='../model')
 
     return parser.parse_args()
 
@@ -158,8 +165,10 @@ def parse_args() -> argparse.Namespace:
 def main():
     """Main function."""
 
-    # parse arguments and set CTC decoder
+    # parse arguments and set model location and CTC decoder
     args = parse_args()
+    FilePaths.set_model_dir(args.model_dir)
+
     decoder_mapping = {'bestpath': DecoderType.BestPath,
                        'beamsearch': DecoderType.BeamSearch,
                        'wordbeamsearch': DecoderType.WordBeamSearch}
