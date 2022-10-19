@@ -6,8 +6,7 @@ import numpy as np
 import tensorflow as tf
 
 from dataloader_iam import Batch
-from main import FilePaths
-
+import main
 # Disable eager mode
 tf.compat.v1.disable_eager_execution()
 
@@ -135,7 +134,7 @@ class Model:
         elif self.decoder_type == DecoderType.WordBeamSearch:
             # prepare information about language (dictionary, characters in dataset, characters forming words)
             chars = ''.join(self.char_list)
-            word_char_file = os.path.join(FilePaths.model_dir, 'wordCharList.txt')
+            word_char_file = os.path.join(main.FilePaths.model_dir, 'wordCharList.txt')
             word_chars = open(word_char_file).read().splitlines()[0]
             corpus = open('../data/corpus.txt').read()
 
@@ -155,7 +154,7 @@ class Model:
         sess = tf.compat.v1.Session()  # TF session
 
         saver = tf.compat.v1.train.Saver(max_to_keep=1)  # saver saves model to file
-        model_dir = FilePaths.model_dir
+        model_dir = main.FilePaths.model_dir
         latest_snapshot = tf.train.latest_checkpoint(model_dir)  # is there a saved model?
 
         # if model must be restored (for inference), there must be a snapshot
@@ -305,5 +304,5 @@ class Model:
     def save(self) -> None:
         """Save model to file."""
         self.snap_ID += 1
-        snapshot_file = os.path.join(FilePaths.model_dir, 'snapshot')
+        snapshot_file = os.path.join(main.FilePaths.model_dir, 'snapshot')
         self.saver.save(self.sess, snapshot_file, global_step=self.snap_ID)
