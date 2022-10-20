@@ -10,18 +10,7 @@ from path import Path
 from dataloader_iam import DataLoaderIAM, Batch
 from model import Model, DecoderType
 from preprocessor import Preprocessor
-
-
-class FilePaths:
-    """Filenames and paths to data."""
-    model_dir = '../model'
-    fn_char_list = os.path.join(model_dir, 'charList.txt')
-    fn_summary = os.path.join(model_dir, 'summary.json')
-    fn_corpus = '../data/corpus.txt'
-
-    @classmethod
-    def set_model_dir(cls, model_dir0):
-        cls.model_dir = model_dir0
+import locations
 
 
 def get_img_height() -> int:
@@ -38,12 +27,12 @@ def get_img_size(line_mode: bool = False) -> Tuple[int, int]:
 
 def write_summary(char_error_rates: List[float], word_accuracies: List[float]) -> None:
     """Writes training summary file for NN."""
-    with open(FilePaths.fn_summary, 'w') as f:
+    with open(locations.get_fn_summary(), 'w') as f:
         json.dump({'charErrorRates': char_error_rates, 'wordAccuracies': word_accuracies}, f)
 
 
 def char_list_from_file() -> List[str]:
-    with open(FilePaths.fn_char_list) as f:
+    with open(locations.get_fn_char_list()) as f:
         return list(f.read())
 
 
@@ -167,7 +156,7 @@ def main():
 
     # parse arguments and set model location and CTC decoder
     args = parse_args()
-    FilePaths.set_model_dir(args.model_dir)
+    locations.set_model_dir(args.model_dir)
 
     decoder_mapping = {'bestpath': DecoderType.BestPath,
                        'beamsearch': DecoderType.BeamSearch,
@@ -184,10 +173,10 @@ def main():
             char_list = [' '] + char_list
 
         # save characters and words
-        with open(FilePaths.fn_char_list, 'w') as f:
+        with open(locations.get_fn_char_list(), 'w') as f:
             f.write(''.join(char_list))
 
-        with open(FilePaths.fn_corpus, 'w') as f:
+        with open(locations.fn_corpus, 'w') as f:
             f.write(' '.join(loader.train_words + loader.validation_words))
 
         model = Model(char_list, decoder_type)
