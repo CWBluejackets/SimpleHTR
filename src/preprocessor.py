@@ -1,10 +1,13 @@
+import os
 import random
+import uuid
 from typing import Tuple
 
 import cv2
 import numpy as np
 
 from dataloader_iam import Batch
+import locations
 
 
 class Preprocessor:
@@ -160,6 +163,12 @@ class Preprocessor:
 
         # transpose for TF
         img = cv2.transpose(img)
+
+        # optional: let's see what preprocessing actually does
+        debug_dir = locations.get_debug_dir()
+        if debug_dir:
+            output_filename = os.path.join(debug_dir, uuid.uuid4().hex + '.png')
+            cv2.imwrite(output_filename, img)
 
         # convert to range [-1, 1]
         img = img / 255 - 0.5

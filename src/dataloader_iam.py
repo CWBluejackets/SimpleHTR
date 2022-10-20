@@ -48,6 +48,14 @@ class DataLoaderIAM:
             line_split = line.split(' ')
             assert len(line_split) >= 9
 
+            # columns:
+            # 0 filename USED
+            # 1 ok
+            # 2 graylevel
+            # 3, 4, 5, 6 x, y, w, h
+            # 7 POS tag
+            # 8+ word(s) USED
+
             # filename: part1-part2-part3 --> part1/part1-part2/part1-part2-part3.png
             file_name_split = line_split[0].split('-')
             file_name_subdir1 = file_name_split[0]

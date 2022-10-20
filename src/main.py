@@ -147,6 +147,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--early_stopping', help='Early stopping epochs.', type=int, default=25)
     parser.add_argument('--dump', help='Dump output of NN to CSV file(s).', action='store_true')
     parser.add_argument('--model_dir', help='Path to trained model', type=Path, default='../model')
+    parser.add_argument('--debug-dir', help='directory to dump CV2', type=Path, default=None)
 
     return parser.parse_args()
 
@@ -157,6 +158,7 @@ def main():
     # parse arguments and set model location and CTC decoder
     args = parse_args()
     locations.set_model_dir(args.model_dir)
+    locations.set_debug_dir(args.debug_dir)
 
     decoder_mapping = {'bestpath': DecoderType.BestPath,
                        'beamsearch': DecoderType.BeamSearch,

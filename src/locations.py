@@ -7,6 +7,8 @@ model_dir = '../model'
 
 fn_corpus = '../data/corpus.txt'
 
+debug_directory = None
+
 
 def set_model_dir(model_dir0):
     global model_dir
@@ -24,3 +26,12 @@ def get_fn_char_list():
 
 def get_fn_summary():
     return os.path.join(model_dir, 'summary.json')
+
+
+def set_debug_dir(d_dir):
+    global debug_directory
+    debug_directory = d_dir
+
+
+def get_debug_dir():
+    return debug_directory
