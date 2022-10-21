@@ -147,7 +147,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--early_stopping', help='Early stopping epochs.', type=int, default=25)
     parser.add_argument('--dump', help='Dump output of NN to CSV file(s).', action='store_true')
     parser.add_argument('--model_dir', help='Path to trained model', type=Path, default='../model')
-    parser.add_argument('--debug-dir', help='directory to dump CV2', type=Path, default=None)
+    parser.add_argument('--debug_dir', help='directory to dump CV2', type=Path, default=None)
 
     return parser.parse_args()
 

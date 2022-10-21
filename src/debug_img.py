@@ -13,7 +13,7 @@ def parse_args() -> argparse.Namespace:
                         help='Directory containing IAM dataset.',
                         type=Path,
                         required=True)
-    parser.add_argument('--debug-dir',
+    parser.add_argument('--debug_dir',
                         help='directory to dump CV2',
                         type=Path,
                         required=True)
