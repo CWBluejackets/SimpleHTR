@@ -37,6 +37,7 @@ def main():
         batch = loader.get_next()
         preprocessor.process_batch(batch)
         print(f'Batch: {iter_info[0]}/{iter_info[1]}')
+    return
 
 
 if __name__ == '__main__':
