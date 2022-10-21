@@ -1,7 +1,10 @@
 import argparse
+
 from path import Path
+
 import locations
-from dataloader_iam import DataLoaderIAM, Batch
+from dataloader_iam import DataLoaderIAM
+from main import get_img_size
 from preprocessor import Preprocessor
 
 
@@ -22,15 +25,14 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main():
+def main_fn():
     # parse arguments and set model location and CTC decoder
     args = parse_args()
-    locations.set_model_dir(args.model_dir)
     locations.set_debug_dir(args.debug_dir)
 
     loader = DataLoaderIAM(args.data_dir, args.batch_size, fast=False)
     line_mode = False
-    preprocessor = Preprocessor(main.get_img_size(line_mode), data_augmentation=True, line_mode=line_mode)
+    preprocessor = Preprocessor(get_img_size(line_mode), data_augmentation=True, line_mode=line_mode)
 
     while loader.has_next():
         iter_info = loader.get_iterator_info()
@@ -41,4 +43,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main_fn()

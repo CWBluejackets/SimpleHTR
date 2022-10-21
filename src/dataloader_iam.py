@@ -1,3 +1,4 @@
+import os.path
 import pickle
 import random
 from collections import namedtuple
@@ -7,6 +8,7 @@ import cv2
 import lmdb
 import numpy as np
 from path import Path
+import locations
 
 Sample = namedtuple('Sample', 'gt_text, file_path')
 Batch = namedtuple('Batch', 'imgs, gt_texts, batch_size')
@@ -128,6 +130,10 @@ class DataLoaderIAM:
                 img = pickle.loads(data)
         else:
             img = cv2.imread(self.samples[i].file_path, cv2.IMREAD_GRAYSCALE)
+            if locations.get_debug_dir():
+                bn = os.path.basename(self.samples[i].file_path)
+                output_filename = os.path.join(locations.get_debug_dir(), bn + '_test.png')
+                cv2.imwrite(output_filename, img)
 
         return img
 
