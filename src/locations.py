@@ -31,7 +31,8 @@ def get_fn_summary():
 def set_debug_dir(d_dir):
     global debug_directory
     debug_directory = d_dir
-    os.makedirs(debug_directory, exist_ok=True)
+    if debug_directory:
+        os.makedirs(debug_directory, exist_ok=True)
     return
 
 
