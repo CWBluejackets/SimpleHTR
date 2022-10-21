@@ -131,13 +131,14 @@ class DataLoaderIAM:
         else:
             img = cv2.imread(self.samples[i].file_path, cv2.IMREAD_GRAYSCALE)
             if locations.get_debug_dir():
+                print(self.samples[i].file_path)
                 bn = os.path.basename(self.samples[i].file_path)
-                if img:
+                if img is None:
+                    print(f'{bn} is None')
+                else:  # None
                     print(f'{bn} is good')
                     output_filename = os.path.join(locations.get_debug_dir(), bn + '_test.png')
                     cv2.imwrite(output_filename, img)
-                else: # None
-                    print(f'{bn} is None')
 
         return img
 
