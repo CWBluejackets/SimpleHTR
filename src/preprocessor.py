@@ -10,6 +10,16 @@ from dataloader_iam import Batch
 import locations
 
 
+def debug_image(img, identifier, suffix):
+    """
+    Optional for debugging the preprocessing
+    """
+    if locations.get_debug_dir():
+        output_filename = os.path.join(locations.get_debug_dir(), identifier + '_' + suffix + '.png')
+        cv2.imwrite(output_filename, img)
+    return
+
+
 class Preprocessor:
     def __init__(self,
                  img_size: Tuple[int, int],
@@ -99,17 +109,28 @@ class Preprocessor:
             img = np.zeros(self.img_size[::-1])
 
         # data augmentation
+        identifier = uuid.uuid4().hex
+        debug_image(img, identifier, 'a')
+
         img = img.astype(np.float)
+        debug_image(img, identifier, 'b')
+
         if self.data_augmentation:
             # photometric data augmentation
             if random.random() < 0.25:
                 def rand_odd():
                     return random.randint(1, 3) * 2 + 1
+
                 img = cv2.GaussianBlur(img, (rand_odd(), rand_odd()), 0)
+                debug_image(img, identifier, 'c_blur')
+
             if random.random() < 0.25:
                 img = cv2.dilate(img, np.ones((3, 3)))
+                debug_image(img, identifier, 'c_dilate')
+
             if random.random() < 0.25:
                 img = cv2.erode(img, np.ones((3, 3)))
+                debug_image(img, identifier, 'c_erode')
 
             # geometric data augmentation
             wt, ht = self.img_size
@@ -117,6 +138,7 @@ class Preprocessor:
             f = min(wt / w, ht / h)
             fx = f * np.random.uniform(0.75, 1.05)
             fy = f * np.random.uniform(0.75, 1.05)
+            debug_image(img, identifier, 'd')
 
             # random position around center
             txc = (wt - w * fx) / 2
@@ -125,19 +147,24 @@ class Preprocessor:
             freedom_y = max((ht - fy * h) / 2, 0)
             tx = txc + np.random.uniform(-freedom_x, freedom_x)
             ty = tyc + np.random.uniform(-freedom_y, freedom_y)
+            debug_image(img, identifier, 'e')
 
             # map image into target image
             M = np.float32([[fx, 0, tx], [0, fy, ty]])
             target = np.ones(self.img_size[::-1]) * 255
             img = cv2.warpAffine(img, M, dsize=self.img_size, dst=target, borderMode=cv2.BORDER_TRANSPARENT)
+            debug_image(img, identifier, 'e')
 
             # photometric data augmentation
             if random.random() < 0.5:
                 img = img * (0.25 + random.random() * 0.75)
+                debug_image(img, identifier, 'f0')
             if random.random() < 0.25:
                 img = np.clip(img + (np.random.random(img.shape) - 0.5) * random.randint(1, 25), 0, 255)
+                debug_image(img, identifier, 'f1')
             if random.random() < 0.1:
                 img = 255 - img
+                debug_image(img, identifier, 'f2')
 
         # no data augmentation
         else:
@@ -160,15 +187,11 @@ class Preprocessor:
             M = np.float32([[f, 0, tx], [0, f, ty]])
             target = np.ones([ht, wt]) * 255
             img = cv2.warpAffine(img, M, dsize=(wt, ht), dst=target, borderMode=cv2.BORDER_TRANSPARENT)
+            debug_image(img, identifier, 'g')
 
         # transpose for TF
         img = cv2.transpose(img)
-
-        # optional: let's see what preprocessing actually does
-        debug_dir = locations.get_debug_dir()
-        if debug_dir:
-            output_filename = os.path.join(debug_dir, uuid.uuid4().hex + '.png')
-            cv2.imwrite(output_filename, img)
+        debug_image(img, identifier, 'h')
 
         # convert to range [-1, 1]
         img = img / 255 - 0.5
