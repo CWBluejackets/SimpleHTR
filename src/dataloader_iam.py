@@ -129,17 +129,19 @@ class DataLoaderIAM:
                 data = txn.get(basename.encode("ascii"))
                 img = pickle.loads(data)
         else:
-            img = cv2.imread(self.samples[i].file_path, cv2.IMREAD_GRAYSCALE)
+            img_path = self.samples[i].file_path
+            if not os.path.exists(img_path):
+                print(f'{img_path} is missing')
+                return None
+            img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
             if locations.get_debug_dir():
-                print(self.samples[i].file_path)
-                bn = os.path.basename(self.samples[i].file_path)
                 if img is None:
-                    print(f'{bn} is None')
+                    print(f'{img_path} is None')
                 else:  # None
-                    print(f'{bn} is good')
-                    output_filename = os.path.join(locations.get_debug_dir(), bn + '_test.png')
+                    print(f'{img_path} is good')
+                    output_filename = os.path.join(locations.get_debug_dir(),
+                                                   os.path.basename(img_path) + '_test.png')
                     cv2.imwrite(output_filename, img)
-
         return img
 
     def get_next(self) -> Batch:
@@ -148,6 +150,8 @@ class DataLoaderIAM:
 
         imgs = [self._get_img(i) for i in batch_range]
         gt_texts = [self.samples[i].gt_text for i in batch_range]
+
+        # TODO eliminate None images?
 
         self.curr_idx += self.batch_size
         return Batch(imgs, gt_texts, len(imgs))
