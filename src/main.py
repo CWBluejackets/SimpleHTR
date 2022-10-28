@@ -39,12 +39,13 @@ def char_list_from_file() -> List[str]:
 def train(model: Model,
           loader: DataLoaderIAM,
           line_mode: bool,
+          augmentation: bool,
           early_stopping: int = 25) -> None:
     """Trains NN."""
     epoch = 0  # number of training epochs since start
     summary_char_error_rates = []
     summary_word_accuracies = []
-    preprocessor = Preprocessor(get_img_size(line_mode), data_augmentation=True, line_mode=line_mode)
+    preprocessor = Preprocessor(get_img_size(line_mode), data_augmentation=augmentation, line_mode=line_mode)
     best_char_error_rate = float('inf')  # best validation character error rate
     no_improvement_since = 0  # number of epochs no improvement of character error rate occurred
     # stop training after this number of epochs without improvement
@@ -141,7 +142,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--decoder', choices=['bestpath', 'beamsearch', 'wordbeamsearch'], default='bestpath')
     parser.add_argument('--batch_size', help='Batch size.', type=int, default=100)
     parser.add_argument('--data_dir', help='Directory containing IAM dataset.', type=Path, required=False)
-    parser.add_argument('--fast', help='Load samples from LMDB.', action='store_true')
+    parser.add_argument('--fast', help='Load samples from LMDB.', default=False, action='store_true')
+    parser.add_argument('--augment', help=' Use data augmentation', default=False, action='store_true')
     parser.add_argument('--line_mode', help='Train to read text lines instead of single words.', action='store_true')
     parser.add_argument('--img_file', help='Image used for inference.', type=Path, default='../data/word.png')
     parser.add_argument('--early_stopping', help='Early stopping epochs.', type=int, default=25)
@@ -182,7 +184,8 @@ def main():
             f.write(' '.join(loader.train_words + loader.validation_words))
 
         model = Model(char_list, decoder_type)
-        train(model, loader, line_mode=args.line_mode, early_stopping=args.early_stopping)
+        train(model, loader, line_mode=args.line_mode, augmentation=args.augment,
+              early_stopping=args.early_stopping)
 
     # evaluate it on the validation set
     elif args.mode == 'validate':
