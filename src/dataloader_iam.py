@@ -10,8 +10,8 @@ import numpy as np
 from path import Path
 import locations
 
-Sample = namedtuple('Sample', 'gt_text, file_path')
-Batch = namedtuple('Batch', 'imgs, gt_texts, batch_size')
+Sample = namedtuple('Sample', ['gt_text', 'file_path'])
+Batch = namedtuple('Batch', ['imgs', 'gt_texts', 'batch_size'])
 
 
 class DataLoaderIAM:
@@ -38,43 +38,35 @@ class DataLoaderIAM:
         self.batch_size = batch_size
         self.samples = []
 
-        f = open(data_dir / 'gt/words.txt')
+        f = open(data_dir / 'words.txt')
         chars = set()
-        bad_samples_reference = ['a01-117-05-02', 'r06-022-03-05']  # known broken images in IAM dataset
         for line in f:
             # ignore empty and comment lines
             line = line.strip()
-            if not line or line[0] == '#':
+            if not line or line.startswith('#'):
                 continue
 
-            line_split = line.split(' ')
-            assert len(line_split) >= 9
+            line_split = line.split(' ', maxsplit=2)
+            assert len(line_split) == 2
 
             # columns:
-            # 0 filename USED
-            # 1 ok
-            # 2 graylevel
-            # 3, 4, 5, 6 x, y, w, h
-            # 7 POS tag
-            # 8+ word(s) USED
+            # 0 filename
+            # 1 word(s)
 
-            # filename: part1-part2-part3 --> part1/part1-part2/part1-part2-part3.png
-            file_name_split = line_split[0].split('-')
-            file_name_subdir1 = file_name_split[0]
-            file_name_subdir2 = f'{file_name_split[0]}-{file_name_split[1]}'
-            file_base_name = line_split[0] + '.png'
-            file_name = data_dir / 'img' / file_name_subdir1 / file_name_subdir2 / file_base_name
+            local_filename = line_split[0]
+            gt_text = line_split[1]
 
-            if line_split[0] in bad_samples_reference:
-                print('Ignoring known broken image:', file_name)
-                continue
+            file_name = data_dir / 'img' / local_filename
 
             # GT text are columns starting at 9
             gt_text = ' '.join(line_split[8:])
             chars = chars.union(set(list(gt_text)))
 
-            # put sample into list
-            self.samples.append(Sample(gt_text, file_name))
+            # put sample into list if file is correct
+            if os.path.exists(file_name):
+                self.samples.append(Sample(gt_text, file_name))
+            else:
+                print(f'File missing: {file_name}')
 
         # split into training and validation set: 95% - 5%
         split_idx = int(data_split * len(self.samples))
@@ -150,8 +142,6 @@ class DataLoaderIAM:
 
         imgs = [self._get_img(i) for i in batch_range]
         gt_texts = [self.samples[i].gt_text for i in batch_range]
-
-        # TODO eliminate None images?
 
         self.curr_idx += self.batch_size
         return Batch(imgs, gt_texts, len(imgs))
